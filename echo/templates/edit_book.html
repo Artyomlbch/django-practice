@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit</title>
+</head>
+<body>
+    {% for x in book %}
+    <form action="{% url 'books' %}" method="POST">
+        {% csrf_token %}
+        <h1>Editing book #{{ x.id }}</h1><br>
+        <input type="text" name="book_id" value="{{ x.id }}" readonly>ID<br><br>
+        <input type="text" name="book_name" required minlength="2" maxlength="30" value="{{ x.name }}">Name<br><br>
+        <input type="text" name="book_author" required minlength="2" maxlength="20" value="{{ x.author }}">Author<br><br>
+        <input type="text" name="book_price" value="{{ x.price }}">Price<br><br>
+        <button type="submit">Submit</button>
+    </form>
+    <button type="button" onclick="location.href={% url 'books' %}">Back</button>
+    {% endfor %}
+</body>
+</html>

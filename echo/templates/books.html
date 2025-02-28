@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Books</title>
+    <style>
+        .dlt {
+            display: inline;
+        }
+        .ndrpg {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Books:<br></h1>
+    {% for x in books %}
+        <p>--------------------------------------------------------</p>
+        <p>#{{ x.id }} || Name: {{ x.name }} || Author: {{ x.author }} || Price: {{ x.price }} ||</p>
+        <button type="button" onclick="location.href='{% url 'edit' %}?id={{ x.id }}'">Edit</button>
+        <form class="dlt" action="" method="POST">
+            {% csrf_token %}
+            <button type="submit" name="rmv_button" value="{{ x.id }}">Delete</button>
+        </form>
+    {% endfor %}
+    <br><br><br>
+    <form class="ndrpg" action="" method="POST">
+        {% csrf_token %}
+        <button type="submit" name="prev" value="{{ prev_i }}"> < </button>
+    </form>
+    <form class="ndrpg" action="" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="rmng" value="{{ remaining_books }}">
+        <button type="submit" name="nxt" value="{{ prev_i }}"> > </button>
+    </form>
+    <form action="{% url 'add' %}">
+        {% csrf_token %}
+        <button type="submit">Add</button>
+    </form>
+</body>
+</html>

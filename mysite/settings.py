@@ -28,9 +28,6 @@ SECRET_KEY = 'django-insecure-*tqeysk@x69yl3r)&j*lp8a2(#d6nj9duc$rl)&zaabjf#qro0
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-AUTH_USER_MODEL = 'echo.MyUser'
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,8 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'echo'
+    'echo',
 ]
+
+AUTH_USER_MODEL = 'echo.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

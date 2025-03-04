@@ -7,29 +7,33 @@
 <body>
 
 <h3>Register</h3>
-<h1>{{ registration_form }}</h1>
 <form action="" method="POST">
     {% csrf_token %}
-    <input type="email" name="email" placeholder="Email address" required>
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password1" placeholder="Password" required>
-    <input type="password" name="password2" placeholder="Confirm password" required>
-
-    {% for field in registration_form %}
-    <p>
-        {% for error in field.errors %}
-        <p style="color: red">{{ error }}</p>
-        {% endfor %}
-    </p>
-    {% endfor %}
-
-    {% if registration_form.non_field_errors %}
-    <div style="color: red">
-        <p>{{ registration_form.non_field_errors }}</p>
-    </div>
-    {% endif %}
-
+    {{ form }}
     <button type="submit">Register</button>
+</form>
+<!--<form action="" method="POST">-->
+<!--    {% csrf_token %}-->
+<!--    <input type="email" name="email" placeholder="Email address" required>-->
+<!--    <input type="text" name="username" placeholder="Username" required>-->
+<!--    <input type="password" name="password1" placeholder="Password" required>-->
+<!--    <input type="password" name="password2" placeholder="Confirm password" required>-->
+
+<!--    {% for field in registration_form %}-->
+<!--    <p>-->
+<!--        {% for error in field.errors %}-->
+<!--        <p style="color: red">{{ error }}</p>-->
+<!--        {% endfor %}-->
+<!--    </p>-->
+<!--    {% endfor %}-->
+
+<!--    {% if registration_form.non_field_errors %}-->
+<!--    <div style="color: red">-->
+<!--        <p>{{ registration_form.non_field_errors }}</p>-->
+<!--    </div>-->
+<!--    {% endif %}-->
+
+<!--    <button type="submit">Register</button>-->
 </form>
 
 </body>

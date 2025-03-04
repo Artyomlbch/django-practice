@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from .models import Books
 from django.template import loader
 from django.contrib.auth import login, authenticate
-# from .forms import RegistrationForm
+from .forms import CustomCreationForm
 
 # Create your views here.
 def homePageView(request):
@@ -14,6 +14,18 @@ def homePageView(request):
     context = {}
     return HttpResponse(template.render(context, request))
 
+def register(request):
+    if request.method == 'POST':
+        form = CustomCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+
+            return HttpResponse('Success')
+    else:
+        form = CustomCreationForm()
+
+    return render(request, 'register.html', {'form': form})
 
 def all_books(request):
     i = 0

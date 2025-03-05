@@ -5,13 +5,18 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import Books
 from django.template import loader
-from django.contrib.auth import login, authenticate
-from .forms import CustomCreationForm
+from django.contrib.auth import login, authenticate, logout
+from .forms import CustomCreationForm, LoginForm
+
 
 # Create your views here.
 def homePageView(request):
     template = loader.get_template("index.html")
-    context = {}
+    if request.user:
+        username = request.user.username
+        context = {'username': username}
+    else:
+        context = {}
     return HttpResponse(template.render(context, request))
 
 def register(request):
@@ -26,6 +31,34 @@ def register(request):
         form = CustomCreationForm()
 
     return render(request, 'register.html', {'form': form})
+
+def user_login(request):
+    errors = []
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = authenticate(username=data['username'], password=data['password'])
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('home')
+                else:
+                    return HttpResponse('Disabled account!')
+            else:
+                return HttpResponse('Invalid login or password')
+
+    else:
+        form = LoginForm()
+
+    return render(request, 'login.html', {'form': form})
+
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 
 def all_books(request):
     i = 0

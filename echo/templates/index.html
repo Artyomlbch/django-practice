@@ -5,6 +5,19 @@
     <title>Main</title>
 </head>
 <body>
+    {% if username %}
+        <h1>You are logged in as: {{ username }}</h1>
+        <a href="logout/">
+            <button>Logout</button>
+        </a>
+    {% else %}
+        <a href="login/">
+            <button>Login</button>
+        </a>
+         <a href="register/">
+            <button>Register</button>
+        </a>
+    {% endif %}
     <button type="button" onclick="location.href='{% url 'books' %}'">Books</button>
 </body>
 </html>

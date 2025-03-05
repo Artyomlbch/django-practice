@@ -6,6 +6,8 @@ urlpatterns = [
     path('books/', all_books, name='books'),
     path('books/edit/', edit_book, name='edit'),
     path('books/add/', add_book, name='add'),
-    path('register/', register, name='register')
+    path('register/', register, name='register'),
+    path('logout/', logout_view, name='logout'),
+    path('login/', user_login, name='login')
 ]
 

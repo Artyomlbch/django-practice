@@ -13,7 +13,7 @@ class CustomCreationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'name']
+        fields = ['username', 'email', 'name', 'password1', 'password2']
     #
     # def clean_password2(self):
     #     password1 = self.cleaned_data.get('password1')
@@ -31,3 +31,7 @@ class CustomCreationForm(UserCreationForm):
     #         user.save()
     #
     #     return user
+
+class LoginForm(forms.Form):
+    username = forms.CharField(label='Username')
+    password = forms.CharField(label='Password', widget=forms.PasswordInput)

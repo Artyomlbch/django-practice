@@ -33,7 +33,7 @@ class CustomUserManager(UserManager):
             raise ValueError('Superuser must be assigned to is_superuser=True.')
 
         return self._create_user(username, password, **extra_fields)
-    
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=30, unique=True)
@@ -48,6 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(blank=True, null=True)
 
     objects = CustomUserManager()
+
 
     USERNAME_FIELD = 'username'
     EMAIL_FIELD = 'email'

@@ -17,25 +17,34 @@
     {% for x in books %}
         <p>--------------------------------------------------------</p>
         <p>#{{ x.id }} || Name: {{ x.name }} || Author: {{ x.author }} || Price: {{ x.price }} ||</p>
+        {% if mod_allowed %}
         <button type="button" onclick="location.href='{% url 'edit' %}?id={{ x.id }}'">Edit</button>
         <form class="dlt" action="" method="POST">
             {% csrf_token %}
             <button type="submit" name="rmv_button" value="{{ x.id }}">Delete</button>
         </form>
+        {% endif %}
     {% endfor %}
     <br><br><br>
+    {% if prev_available %}
     <form class="ndrpg" action="" method="POST">
         {% csrf_token %}
         <button type="submit" name="prev" value="{{ prev_i }}"> < </button>
     </form>
+    {% endif %}
+    {% if next_available %}
     <form class="ndrpg" action="" method="POST">
         {% csrf_token %}
         <input type="hidden" name="rmng" value="{{ remaining_books }}">
         <button type="submit" name="nxt" value="{{ prev_i }}"> > </button>
     </form>
+    {% endif %}
     <form action="{% url 'add' %}">
         {% csrf_token %}
         <button type="submit">Add</button>
     </form>
+    <a href="{% url 'home' %}">
+        <button type="button">Home</button>
+    </a>
 </body>
 </html>

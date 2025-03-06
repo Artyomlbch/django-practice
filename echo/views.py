@@ -1,12 +1,16 @@
 from logging import exception
 
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import Books
 from django.template import loader
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import Group
 from .forms import CustomCreationForm, LoginForm
+from .decorators import unauthenticated_user, allowed_users
+
 
 
 # Create your views here.
@@ -19,11 +23,18 @@ def homePageView(request):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
+@unauthenticated_user
 def register(request):
     if request.method == 'POST':
         form = CustomCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+
+            group = Group.objects.get(name='admin')
+            print(group)
+            user.groups.add(group)
+
             login(request, user)
 
             return HttpResponse('Success')
@@ -32,6 +43,8 @@ def register(request):
 
     return render(request, 'register.html', {'form': form})
 
+
+@unauthenticated_user
 def user_login(request):
     errors = []
     if request.method == 'POST':
@@ -43,7 +56,8 @@ def user_login(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return redirect('home')
+
+                    return redirect(request.GET.get('next', 'home'))
                 else:
                     return HttpResponse('Disabled account!')
             else:
@@ -60,9 +74,11 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+@login_required
 def all_books(request):
     i = 0
     j = 4
+    prev_available, next_available = 1, 1
     if request.method == "POST":
         if 'rmv_button' in request.POST:
             try:
@@ -90,7 +106,7 @@ def all_books(request):
                 new_book.save()
 
             except ValueError as e:
-                return HttpResponse("Price has to be a positive number.")
+                return HttpResponse("Enter a valid price.")
 
         elif 'nxt' in request.POST:
             try:
@@ -101,7 +117,6 @@ def all_books(request):
                 elif rmng > 0:
                     j = i - rmng + 1
                     i += 4
-
 
             except Exception as e:
                 return HttpResponse("Something gone wrong (nxt).")
@@ -133,14 +148,25 @@ def all_books(request):
     data = Books.objects.all().values()
     remaining_books = data.count() - i - 4
 
+    if i == 0: prev_available = False
+    if remaining_books + 4 < 4: next_available = False
+    if request.user.groups.all()[0].name == 'admin': mod_allowed = True
+    else: mod_allowed = False
+
     template = loader.get_template("books.html")
     context = {
         'books': data[i: i + j],
         'prev_i': i,
         'remaining_books': remaining_books,
+        'prev_available': prev_available,
+        'next_available': next_available,
+        'mod_allowed': mod_allowed
     }
     return HttpResponse(template.render(context, request))
 
+
+@login_required
+@allowed_users(allowed_roles=['admin'])
 def edit_book(request):
     book_id = request.GET.get('id', '0')
 
@@ -151,6 +177,8 @@ def edit_book(request):
     }
     return HttpResponse(template.render(context, request))
 
+
+@login_required
 def add_book(request):
     template = loader.get_template("add_book.html")
     context = {}

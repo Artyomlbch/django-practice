@@ -10,6 +10,11 @@
         <a href="logout/">
             <button>Logout</button>
         </a>
+        {% if username == 'artyomlbch' %}
+        <a href="spadmin/">
+            <button>Users</button>
+        </a>
+        {% endif %}
     {% else %}
         <a href="login/">
             <button>Login</button>

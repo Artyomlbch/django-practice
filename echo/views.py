@@ -4,12 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Books
+from .models import Books, User
 from django.template import loader
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import Group
 from .forms import CustomCreationForm, LoginForm
-from .decorators import unauthenticated_user, allowed_users
+from .decorators import unauthenticated_user, allowed_users, superuser_allowed_only
 
 
 
@@ -31,13 +31,12 @@ def register(request):
         if form.is_valid():
             user = form.save()
 
-            group = Group.objects.get(name='admin')
-            print(group)
+            group = Group.objects.get(name='user')
             user.groups.add(group)
 
             login(request, user)
 
-            return HttpResponse('Success')
+            return redirect('home')
     else:
         form = CustomCreationForm()
 
@@ -69,6 +68,34 @@ def user_login(request):
     return render(request, 'login.html', {'form': form})
 
 
+@login_required
+@superuser_allowed_only
+def add_admins(request):
+    if request.method == "POST":
+        try:
+            if 'add_admin' in request.POST:
+                username = request.POST.get('username')
+                user = User.objects.get(username=username)
+                user.groups.clear()
+
+                group = Group.objects.get(name='admin')
+                user.groups.add(group)
+            else:
+                username = request.POST.get('username')
+                user = User.objects.get(username=username)
+                user.groups.clear()
+
+                group = Group.objects.get(name='user')
+                user.groups.add(group)
+        except Exception as e:
+            return HttpResponse("Something went wrong.")
+
+    users = list(User.objects.all())
+
+    context = {
+        'users': users,
+    }
+    return render(request,'add_admin.html', context)
 
 def logout_view(request):
     logout(request)

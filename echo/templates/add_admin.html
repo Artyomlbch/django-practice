@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+</head>
+<body>
+<h1>All users:</h1>
+{% for user in users %}
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="hidden" name="username" readonly value="{{ user.username }}">
+  <h2>Username: {{ user.username }}</h2>
+  {% for group in user.groups.all %}
+  <h3>Status: {{ group.name }}</h3>
+  {% if group.name != 'admin' %}
+  <input type="hidden" name="add_admin">
+  <button type="submit">Make admin</button>
+  {% else %}
+  <button type="submit" name="remove_admin">Delete admin</button>
+  {% endif %}
+  {% endfor %}
+</form>
+<h3>--------------------------------------</h3>
+{% endfor %}
+
+</body>
+</html>

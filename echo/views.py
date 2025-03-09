@@ -101,7 +101,6 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
-@login_required
 def all_books(request):
     i = 0
     j = 4
@@ -175,10 +174,10 @@ def all_books(request):
     data = Books.objects.all().values()
     remaining_books = data.count() - i - 4
 
+
     if i == 0: prev_available = False
-    if remaining_books + 4 < 4: next_available = False
-    if request.user.groups.all()[0].name == 'admin': mod_allowed = True
-    else: mod_allowed = False
+    if remaining_books + 4 <= 4: next_available = False
+
 
     template = loader.get_template("books.html")
     context = {
@@ -187,7 +186,6 @@ def all_books(request):
         'remaining_books': remaining_books,
         'prev_available': prev_available,
         'next_available': next_available,
-        'mod_allowed': mod_allowed
     }
     return HttpResponse(template.render(context, request))
 

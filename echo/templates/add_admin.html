@@ -14,12 +14,14 @@
   {% for group in user.groups.all %}
   <h3>Status: {{ group.name }}</h3>
   {% if group.name != 'admin' %}
-  <input type="hidden" name="add_admin">
-  <button type="submit">Make admin</button>
+  <button type="submit" name="make_admin">Make admin</button>
   {% else %}
   <button type="submit" name="remove_admin">Delete admin</button>
   {% endif %}
   {% endfor %}
+  {% if user.username != 'artyomlbch' %}
+  <button type="submit" name="delete_user">Delete user</button>
+  {% endif %}
 </form>
 <h3>--------------------------------------</h3>
 {% endfor %}

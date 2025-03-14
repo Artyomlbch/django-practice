@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from .models import Books, User
 from django.template import loader
 from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
 from django.contrib.auth.models import Group
 from .forms import CustomCreationForm, LoginForm
 from .decorators import unauthenticated_user, allowed_users, superuser_allowed_only
@@ -45,7 +46,6 @@ def register(request):
 
 @unauthenticated_user
 def user_login(request):
-    errors = []
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -60,7 +60,7 @@ def user_login(request):
                 else:
                     return HttpResponse('Disabled account!')
             else:
-                return HttpResponse('Invalid login or password')
+                messages.add_message(request, messages.ERROR, 'Username or password is not correct!')
 
     else:
         form = LoginForm()
@@ -73,20 +73,24 @@ def user_login(request):
 def add_admins(request):
     if request.method == "POST":
         try:
-            if 'add_admin' in request.POST:
+            if 'make_admin' in request.POST:
                 username = request.POST.get('username')
                 user = User.objects.get(username=username)
                 user.groups.clear()
 
                 group = Group.objects.get(name='admin')
                 user.groups.add(group)
-            else:
+            elif 'remove_admin' in request.POST:
                 username = request.POST.get('username')
                 user = User.objects.get(username=username)
                 user.groups.clear()
 
                 group = Group.objects.get(name='user')
                 user.groups.add(group)
+            else:
+                username = request.POST.get('username')
+                User.objects.filter(username=username).delete()
+
         except Exception as e:
             return HttpResponse("Something went wrong.")
 

@@ -8,7 +8,19 @@
 <h1>Log in</h1>
 <form action="" method="POST">
   {% csrf_token %}
-  {{ form }}
+  <div>
+      {{ form.username.label }}
+      {{ form.username }}
+  </div>
+    <div>
+      {{ form.password.label }}
+      {{ form.password }}
+  </div>
+    {% if messages %}
+        {% for message in messages %}
+        <p style="color: red">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
   <button type="submit">Login</button>
 </form>
 </body>

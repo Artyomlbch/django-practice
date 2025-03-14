@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 
 from .models import User
@@ -33,5 +34,7 @@ class CustomCreationForm(UserCreationForm):
     #     return user
 
 class LoginForm(forms.Form):
-    username = forms.CharField(label='Username')
-    password = forms.CharField(label='Password', widget=forms.PasswordInput)
+    username = forms.CharField(label='Username', required=True)
+    password = forms.CharField(label='Password', widget=forms.PasswordInput, required=True)
+
+

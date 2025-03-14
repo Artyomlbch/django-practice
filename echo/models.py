@@ -54,6 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = []
 
+
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'

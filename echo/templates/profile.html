@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+</head>
+<body>
+<h4>Username: {{ username }}</h4>
+{% if email %}
+<h4>Email: {{ email }}</h4>
+{% endif %}
+{% if name %}
+<h4>Name: {{ name }}</h4>
+{% endif %}
+<a href="edit_profile">
+  <button>Edit</button>
+</a><br>
+<a href="{% url 'home' %}">
+  <button>Home</button>
+</a>
+</body>
+</html>

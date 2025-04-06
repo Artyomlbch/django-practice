@@ -15,7 +15,7 @@
         <h1>Add book</h1><br>
         <input type="text" name="new_name" required minlength="2" maxlength="30">Name<br><br>
         <input type="text" name="new_author" required minlength="2" maxlength="20" value="{{ x.author }}">Author<br><br>
-        <input type="text" name="new_price" value="{{ x.price }}">Price<br><br>
+        <input type="text" name="new_price" value="{{ x.price }}" required>Price<br><br>
         <button type="submit">Submit</button>
     </form>
     <button type="button" onclick="location.href={% url 'books' %}">Back</button>

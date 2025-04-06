@@ -11,11 +11,13 @@ from django.contrib import messages
 from django.contrib.auth.models import Group
 from .forms import CustomCreationForm, LoginForm
 from .decorators import unauthenticated_user, allowed_users, superuser_allowed_only
+from django.views.decorators.cache import never_cache
 
 
 
 # Create your views here.
 def homePageView(request):
+    print(request)
     template = loader.get_template("index.html")
     if request.user:
         username = request.user.username
@@ -101,9 +103,11 @@ def add_admins(request):
     }
     return render(request,'add_admin.html', context)
 
+
 def logout_view(request):
     logout(request)
     return redirect('home')
+
 
 def all_books(request):
     i = 0
@@ -212,3 +216,62 @@ def add_book(request):
     template = loader.get_template("add_book.html")
     context = {}
     return HttpResponse(template.render(context, request))
+
+
+@login_required
+def profile_view(request):
+    template = loader.get_template("profile.html")
+    context = {'username': request.user.username,
+               'email': request.user.email}
+
+    if request.user.name:
+        context['name'] = request.user.name
+
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def edit_profile(request):
+
+    if request.method == "POST":
+        username = request.user.username
+        user = User.objects.filter(username=username)[0]
+
+        users = User.objects.all()
+        usernames, emails = [x.username for x in users], [x.email for x in users]
+
+        new_username = request.POST.get('username')
+        new_email = request.POST.get('email')
+
+        if user.name: new_name = request.POST.get('name')
+        else: new_name = ''
+
+        if new_username != username or new_email != user.email:
+            if new_username not in usernames or new_email not in emails:
+                user.username = new_username
+                user.email = new_email
+                if new_name: user.name = new_name
+
+                user.save()
+                messages.add_message(request, messages.SUCCESS, 'Success!')
+            else:
+                messages.add_message(request, messages.ERROR, 'This username or email email already exists.')
+
+    template = loader.get_template('edit_profile.html')
+    context = {
+        'username': request.user.username,
+        'email': request.user.email
+        }
+
+    if request.user.name: context['name'] = request.user.name
+
+    return HttpResponse(template.render(context, request))
+
+
+
+
+
+
+
+
+

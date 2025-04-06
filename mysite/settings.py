@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-from django.conf.global_settings import AUTH_USER_MODEL
+from django.conf.global_settings import AUTH_USER_MODEL, CACHE_MIDDLEWARE_ALIAS, SESSION_CACHE_ALIAS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,6 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.cache.UpdateCacheMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'mysite.urls'
@@ -87,6 +89,17 @@ DATABASES = {
     }
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://localhost:6379/1', # redis location
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default' # cache alias name
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -131,4 +144,3 @@ LOGIN_URL = '/login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SUPER_ADMIN_USERNAME = 'artyomlbch'

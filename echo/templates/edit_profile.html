@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit</title>
+</head>
+<body>
+<form action="" method="POST">
+  {% csrf_token %}
+  <label for="username">Username</label>
+  <input type="text" name="username" value="{{ username }}" required><br>
+
+  <label for="email">Email</label>
+  <input type="email" name="email" value="{{ email }}" required><br>
+
+  {% if name %}
+  <label for="name">Name</label>
+  <input type="text" name="name" value="{{ name }}" required>
+  {% endif %}
+  {% if messages %}
+    {% for message in messages %}
+        {% if 'success' in message.tags %}
+        <p style="color: green">{{ message }}</p>
+        {% else %}
+        <p style="color: red"> {{ message }}</p>
+        {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <button type="submit" name="profile_edit">Edit</button>
+</form>
+<br><br><br>
+<form action="" method="POST">
+    {% csrf_token %}
+    <label for="email">Old password</label>
+    <input type="text" name="old_password" required><br>
+
+    <label for="email">New password</label>
+    <input type="password" name="new_password" required><br>
+    <button type="submit">Change password</button>
+</form>
+
+<br><br>
+<a href="{% url 'home' %}">
+    <button>Home</button>
+</a>
+
+</body>
+</html>

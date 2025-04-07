@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cart</title>
+</head>
+<body>
+<form action="" method="POST">
+{% csrf_token %}
+    <h1>Your cart:</h1>
+    {% for book in books %}
+        <p>--------------------------------------------------------</p>
+        {% for x in book.book %}
+        <p>#{{ x.id }} || Name: {{ x.name }} || Author: {{ x.author }} || Price per one: {{ x.price }} ||</p>
+        {% endfor %}
+        <p>Count: {{ book.count }}</p>
+        <p>Total price: {{ book.total_price }}</p>
+    {% endfor %}
+    <br><br>
+{% if books %}
+<button type="submit">Make an order</button>
+{% endif %}
+</form>
+<br><br>
+<a href="{% url 'home' %}">
+    <button>Home</button>
+</a>
+</body>
+</html>

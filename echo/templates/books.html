@@ -24,6 +24,10 @@
             <button type="submit" name="rmv_button" value="{{ x.id }}">Delete</button>
         </form>
         {% endif %}
+        <form action="" method="POST">
+            {% csrf_token %}
+            <button type="submit" name="add_to_cart" value="{{ x.id }}">Add to cart</button>
+        </form>
     {% endfor %}
     <br><br><br>
     {% if prev_available %}

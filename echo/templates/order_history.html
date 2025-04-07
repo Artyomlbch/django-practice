@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Orders history</title>
+</head>
+<body>
+<h1>Your orders:</h1>
+{% for order in orders %}
+    <p>-------------------------------</p>
+    <p>Date: {{ order.date }}</p>
+    <p>Order price: {{ order.order_price }}</p>
+    <p>-------------------------------</p>
+    {% for books in order.books %}
+        <p>Name: {{ books.book_name }} || Author: {{ books.author }} || Price (per one): {{ books.price }} || Amount: {{ books.amount }}</p>
+    {% endfor %}
+<br><br>
+{% endfor %}
+<br><br>
+<a href="{% url 'home' %}">
+    <button>Home</button>
+</a>
+</body>
+</html>

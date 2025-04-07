@@ -11,6 +11,8 @@ urlpatterns = [
     path('login/', user_login, name='login'),
     path('spadmin/', add_admins, name='add_admin'),
     path('profile/', profile_view, name='profile'),
-    path('profile/edit_profile/', edit_profile, name='edit_profile')
+    path('profile/edit_profile/', edit_profile, name='edit_profile'),
+    path('cart', cart, name='cart'),
+    path('order_history', order_history, name='order_history')
 ]
 

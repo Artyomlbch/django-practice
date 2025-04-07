@@ -74,3 +74,11 @@ class Books(models.Model):
     author = models.CharField(max_length=20)
     price = models.IntegerField()
 
+
+class Orders(models.Model):
+    username = models.CharField(max_length=40)
+    date = models.DateTimeField()
+    order_price = models.IntegerField()
+    books_info = models.CharField(max_length=5000)
+
+

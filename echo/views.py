@@ -1,23 +1,26 @@
+import datetime
 from logging import exception
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Books, User
+from .models import Books, User, Orders
 from django.template import loader
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.models import Group
 from .forms import CustomCreationForm, LoginForm
 from .decorators import unauthenticated_user, allowed_users, superuser_allowed_only
+from .cart import Cart
+from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 
 
 
 # Create your views here.
 def homePageView(request):
-    print(request)
+    print(request.COOKIES)
     template = loader.get_template("index.html")
     if request.user:
         username = request.user.username
@@ -103,16 +106,81 @@ def add_admins(request):
     }
     return render(request,'add_admin.html', context)
 
-
+@login_required
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+@login_required
+def order_history(request):
+    username = request.user.username
+    all_orders = Orders.objects.filter(username=username).all().values()
+    orders = []
+
+    for order in all_orders:
+        date = datetime.datetime.strftime(order['date'], '%Y-%m-%d %H:%M')
+        order_price = order['order_price']
+        order_dict = {'date': date,
+                      'order_price': order_price}
+
+        books = []
+        for book in order['books_info'].split('\n'):
+            book_info = book.split(' ')
+            if len(book_info) != 1:
+                books.append({'book_name': book_info[0], 'author': book_info[1], 'price': book_info[2], 'amount': book_info[3]})
+
+        order_dict['books'] = books
+        orders.append(order_dict)
+
+    context = {'orders': orders}
+
+    return render(request, 'order_history.html', context)
+
+@login_required
+def cart(request):
+
+    template = loader.get_template('cart.html')
+    cart = Cart(request)
+    books_ids = request.session['cart']['books']
+    books = []
+    context = {}
+
+    for book_id in set(books_ids):
+        count = books_ids.count(book_id)
+        book = Books.objects.filter(id=book_id)
+        total_price = int(count) * int(book[0].price)
+
+        books.append({'book': book, 'count': count, 'total_price': total_price})
+
+    if request.method == 'POST':
+        order_price = 0
+        date = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M")
+
+        books_info = ""
+        for book in books:
+            order_price += book['total_price']
+            book_info = book['book'][0]
+
+            books_info += book_info.name + " " + book_info.author + " " + str(book_info.price) + " " + str(book['count']) + \
+                          " " + str(book['total_price'])
+            books_info += "\n"
+
+        order = Orders(username=request.user.username, date=date, order_price=order_price, books_info=books_info)
+        order.save()
+
+        cart.clear()
+        return HttpResponse("Success!")
+
+    context['books'] = books
+    return HttpResponse(template.render(context, request))
 
 
 def all_books(request):
     i = 0
     j = 4
     prev_available, next_available = 1, 1
+
     if request.method == "POST":
         if 'rmv_button' in request.POST:
             try:
@@ -141,6 +209,12 @@ def all_books(request):
 
             except ValueError as e:
                 return HttpResponse("Enter a valid price.")
+
+        elif 'add_to_cart' in request.POST:
+            book_id = request.POST.get('add_to_cart')
+            user_cart = Cart(request)
+            user_cart.add(book_id)
+
 
         elif 'nxt' in request.POST:
             try:

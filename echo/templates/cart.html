@@ -13,11 +13,12 @@
         {% for x in book.book %}
         <p>#{{ x.id }} || Name: {{ x.name }} || Author: {{ x.author }} || Price per one: {{ x.price }} ||</p>
         {% endfor %}
-        <p>Count: {{ book.count }}</p>
+        <p>Amount: {{ book.count }}</p>
         <p>Total price: {{ book.total_price }}</p>
     {% endfor %}
     <br><br>
 {% if books %}
+<p>Order price: {{ order_price }}</p>
 <button type="submit">Make an order</button>
 {% endif %}
 </form>

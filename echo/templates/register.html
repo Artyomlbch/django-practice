@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Registration</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
 
@@ -12,16 +13,10 @@
     <div>
         {{ form.username.label }}
         {{ form.username }}
-        {% for error in form.username.errors %}
-            <p style="color: red">{{ error }}</p>
-        {% endfor %}
     </div>
     <div>
         {{ form.email.label }}
         {{ form.email }}
-        {% for error in form.email.errors %}
-            <p style="color: red">{{ error }}</p>
-        {% endfor %}
     </div>
     <div>
         {{ form.name.label }}
@@ -46,29 +41,68 @@
     </div>
     <button type="submit">Register</button>
 </form>
-<!--<form action="" method="POST">-->
-<!--    {% csrf_token %}-->
-<!--    <input type="email" name="email" placeholder="Email address" required>-->
-<!--    <input type="text" name="username" placeholder="Username" required>-->
-<!--    <input type="password" name="password1" placeholder="Password" required>-->
-<!--    <input type="password" name="password2" placeholder="Confirm password" required>-->
 
-<!--    {% for field in registration_form %}-->
-<!--    <p>-->
-<!--        {% for error in field.errors %}-->
-<!--        <p style="color: red">{{ error }}</p>-->
-<!--        {% endfor %}-->
-<!--    </p>-->
-<!--    {% endfor %}-->
+<script>
+   $("#id_username").change(function () {
+      var username = $(this).val();
+      $.ajax({
+            url: '/validate_username/',
+            data: {
+                'username': username
+            },
+            dataType: 'json',
+            success: function (data) {
+                 if (data.is_taken) {
+                    $("#user_error").remove();
+                    $("#id_username").after("<p style='color: red' id='user_error'>Username is already taken!</p>");
+                 } else {
+                    $("#user_error").remove();
+                    $("#id_username").after("<p style='color: green' id=user_error>✓</p>");
+                 }
+            }
+      });
+   });
 
-<!--    {% if registration_form.non_field_errors %}-->
-<!--    <div style="color: red">-->
-<!--        <p>{{ registration_form.non_field_errors }}</p>-->
-<!--    </div>-->
-<!--    {% endif %}-->
+  $("#id_email").change(function () {
+  var email = $(this).val();
+  $.ajax({
+        url: '/validate_email/',
+        data: {
+            'email': email
+        },
+        dataType: 'json',
+        success: function (data) {
+             if (data.is_taken) {
+                 $("#email_error").remove();
+                 $("#id_email").after("<p style='color: red' id='email_error'>Email is already taken! (Or invalid email)</p>");
+             } else {
+                 $("#email_error").remove();
+                 $("#id_email").after("<p style='color: green' id='email_error'>✓</p>");
+             }
+        }
+      });
+   });
 
-<!--    <button type="submit">Register</button>-->
-</form>
+  $("#id_password1").change(function () {
+  var password = $(this).val();
+  $.ajax({
+        url: '/validate_password/',
+        data: {
+            'password': password
+        },
+        dataType: 'json',
+        success: function (data) {
+             if (!data.allowed) {
+                 $("#password_error").remove();
+                 $("#id_password1").after("<p style='color: red' id='password_error'>Password has to be more than 8 characters!</p>");
+             } else {
+                 $("#password_error").remove();
+                 $("#id_password1").after("<p style='color: green' id='password_error'>✓</p>");
+             }
+        }
+      });
+   });
+</script>
 
 </body>
 </html>

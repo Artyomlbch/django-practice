@@ -1,10 +1,11 @@
 import datetime
+import json
 from logging import exception
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from .models import Books, User, Orders
 from django.template import loader
 from django.contrib.auth import login, authenticate, logout
@@ -18,9 +19,10 @@ from django.views.decorators.cache import never_cache
 
 
 
+
 # Create your views here.
 def homePageView(request):
-    print(request.COOKIES)
+    request.session['filtered_books'] = False
     template = loader.get_template("index.html")
     if request.user:
         username = request.user.username
@@ -47,6 +49,37 @@ def register(request):
         form = CustomCreationForm()
 
     return render(request, 'register.html', {'form': form})
+
+
+def validate_username(request):
+    username = request.GET.get("username", None)
+    response = {
+        'is_taken': User.objects.filter(username=username).exists()
+    }
+
+    return JsonResponse(response)
+
+
+def validate_email(request):
+    email = request.GET.get("email", None)
+    if '@' not in email and '.' not in email:
+        response = {
+            'is_taken': True
+        }
+    else:
+        response = {
+            'is_taken': User.objects.filter(email=email).exists()
+        }
+
+    return JsonResponse(response)
+
+
+def validate_password(request):
+    response = {
+        'allowed': len(request.GET.get("password", None)) >= 8,
+    }
+
+    return JsonResponse(response)
 
 
 @unauthenticated_user
@@ -106,6 +139,7 @@ def add_admins(request):
     }
     return render(request,'add_admin.html', context)
 
+
 @login_required
 def logout_view(request):
     logout(request)
@@ -145,23 +179,26 @@ def cart(request):
     books_ids = request.session['cart']['books']
     books = []
     context = {}
+    order_price = 0
 
     for book_id in set(books_ids):
         count = books_ids.count(book_id)
         book = Books.objects.filter(id=book_id)
         total_price = int(count) * int(book[0].price)
 
+        order_price += total_price
+
         books.append({'book': book, 'count': count, 'total_price': total_price})
 
+    context['order_price'] = order_price
+
     if request.method == 'POST':
-        order_price = 0
-        date = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M")
+        date = datetime.datetime.strftime(datetime.datetime.utcnow() + datetime.timedelta(hours=5)
+                                          , "%Y-%m-%d %H:%M")
 
         books_info = ""
         for book in books:
-            order_price += book['total_price']
             book_info = book['book'][0]
-
             books_info += book_info.name + " " + book_info.author + " " + str(book_info.price) + " " + str(book['count']) + \
                           " " + str(book['total_price'])
             books_info += "\n"
@@ -170,10 +207,17 @@ def cart(request):
         order.save()
 
         cart.clear()
-        return HttpResponse("Success!")
+        return redirect('home')
 
     context['books'] = books
     return HttpResponse(template.render(context, request))
+
+
+def generate_books(request):
+    for i in range(50):
+        book = Books(name=f'bbboooobb', author=f'fedya{i}', price=1000 + i)
+        book.save()
+    return HttpResponse("Done")
 
 
 def all_books(request):
@@ -238,6 +282,21 @@ def all_books(request):
             except Exception as e:
                 return HttpResponse("Something gone wrong (prev).")
 
+        elif 'filter_submit_button' in request.POST:
+            selects = request.POST.dict()
+            print(selects)
+
+            for key in selects.keys():
+                if selects[key] != '' and key != 'csrfmiddlewaretoken':
+                    request.session['filter_type'] = key.split('_')[0]
+                    request.session['filter_value'] = selects[key]
+                    request.session['filtered_books'] = True
+                    break
+
+        elif 'reset_filters' in request.POST:
+            request.session['filtered_books'] = False
+            return redirect('books')
+
         else:
             try:
                 b_id = request.POST.get("book_id")
@@ -253,13 +312,18 @@ def all_books(request):
             except ValueError as e:
                 return HttpResponse("Something gone wrong. (Try to check price field again)")
 
-    data = Books.objects.all().values()
-    remaining_books = data.count() - i - 4
+    if request.session['filtered_books']:
+        if request.session['filter_type'] == 'name':
+            data = Books.objects.filter(name=f'{request.session['filter_value']}').values()
+        elif request.session['filter_type'] == 'author':
+            data = Books.objects.filter(author=f'{request.session['filter_value']}').values()
+    else:
+        data = Books.objects.all().values()
 
+    remaining_books = data.count() - i - 4
 
     if i == 0: prev_available = False
     if remaining_books + 4 <= 4: next_available = False
-
 
     template = loader.get_template("books.html")
     context = {
@@ -269,6 +333,7 @@ def all_books(request):
         'prev_available': prev_available,
         'next_available': next_available,
     }
+    print(request.user)
     return HttpResponse(template.render(context, request))
 
 
@@ -311,27 +376,42 @@ def edit_profile(request):
         username = request.user.username
         user = User.objects.filter(username=username)[0]
 
-        users = User.objects.all()
-        usernames, emails = [x.username for x in users], [x.email for x in users]
+        if 'new_password' in request.POST:
+            new_password = request.POST.get('new_password')
+            confirm_new_password = request.POST.get('confirm_new_password')
 
-        new_username = request.POST.get('username')
-        new_email = request.POST.get('email')
-
-        if user.name: new_name = request.POST.get('name')
-        else: new_name = ''
-
-        if new_username != username or new_email != user.email:
-            if new_username not in usernames or new_email not in emails:
-                user.username = new_username
-                user.email = new_email
-                if new_name: user.name = new_name
-
-                user.save()
-                messages.add_message(request, messages.SUCCESS, 'Success!')
+            if confirm_new_password != new_password:
+                messages.add_message(request, messages.ERROR, "Passwords don't match.", extra_tags='psw')
             else:
-                messages.add_message(request, messages.ERROR, 'This username or email email already exists.')
+                user.set_password(new_password)
+                user.save()
+
+                return redirect('login')
+        else:
+            users = User.objects.all()
+            usernames, emails = [x.username for x in users], [x.email for x in users]
+
+            new_username = request.POST.get('username')
+            new_email = request.POST.get('email')
+
+            if user.name:
+                new_name = request.POST.get('name')
+            else:
+                new_name = ''
+
+            if new_username != username or new_email != user.email:
+                if new_username not in usernames or new_email not in emails:
+                    user.username = new_username
+                    user.email = new_email
+                    if new_name: user.name = new_name
+
+                    user.save()
+                    messages.add_message(request, messages.SUCCESS, 'Success!', extra_tags='inf')
+                else:
+                    messages.add_message(request, messages.ERROR, 'This username or email email already exists.', extra_tags='inf')
 
     template = loader.get_template('edit_profile.html')
+
     context = {
         'username': request.user.username,
         'email': request.user.email

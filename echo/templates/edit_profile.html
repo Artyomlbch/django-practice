@@ -19,10 +19,12 @@
   {% endif %}
   {% if messages %}
     {% for message in messages %}
-        {% if 'success' in message.tags %}
-        <p style="color: green">{{ message }}</p>
-        {% else %}
-        <p style="color: red"> {{ message }}</p>
+        {% if 'inf' in message.extra_tags %}
+            {% if 'success' in message.tags %}
+            <p style="color: green">{{ message }}</p>
+            {% else %}
+            <p style="color: red"> {{ message }}</p>
+            {% endif %}
         {% endif %}
     {% endfor %}
   {% endif %}
@@ -32,11 +34,19 @@
 <br><br><br>
 <form action="" method="POST">
     {% csrf_token %}
-    <label for="email">Old password</label>
-    <input type="text" name="old_password" required><br>
+    <label for="new_password">New password</label>
+    <input type="text" name="new_password" minlength="7" required><br>
 
-    <label for="email">New password</label>
-    <input type="password" name="new_password" required><br>
+    <label for="confirm_new_password">Confirm new password</label>
+    <input type="password" name="confirm_new_password" required><br>
+    {% if messages %}
+    {% for message in messages %}
+        {% if 'psw' in message.extra_tags %}
+            <p style="color: red"> {{ message }}</p>
+        {% endif %}
+    {% endfor %}
+  {% endif %}
+
     <button type="submit">Change password</button>
 </form>
 

@@ -10,9 +10,36 @@
         .ndrpg {
             display: inline;
         }
+        .rst {
+            display: inline;
+        }
+
     </style>
+    {% load static %}
 </head>
 <body>
+
+<label for="filter">Filter</label>
+<select name="filter" id="filter">
+    <option value="no_filter">None</option>
+    <option value="name">Name</option>
+    <option value="author">Author</option>
+</select>
+
+<form action="" method="POST" class="rst">
+    {% csrf_token %}
+    <button type="submit" name="reset_filters">Reset filters</button>
+</form>
+<br>
+
+<form action="" method="POST">
+    {% csrf_token %}
+    <input type="text" style="display:none" name="name_filter" id="name">
+    <input type="text" style="display:none" name="author_filter" id="author">
+
+    <button type="submit" style="display:none" name='filter_submit_button' id="filter_submit_button">Apply</button>
+</form>
+
     <h1>Books:<br></h1>
     {% for x in books %}
         <p>--------------------------------------------------------</p>
@@ -24,10 +51,12 @@
             <button type="submit" name="rmv_button" value="{{ x.id }}">Delete</button>
         </form>
         {% endif %}
+        {% if request.user.username %}
         <form action="" method="POST">
             {% csrf_token %}
             <button type="submit" name="add_to_cart" value="{{ x.id }}">Add to cart</button>
         </form>
+        {% endif %}
     {% endfor %}
     <br><br><br>
     {% if prev_available %}
@@ -53,5 +82,7 @@
     <a href="{% url 'home' %}">
         <button type="button">Home</button>
     </a>
+
+    <script src="{% static 'books.js' %}"></script>
 </body>
 </html>
